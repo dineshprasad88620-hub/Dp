@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>DP CASINO — Demo Login</title>
+<style>
+:root{--gold:#f3c44f;--gold2:#d9a72d;--bg:#090909;--card:#171717;--muted:#bdb7a9}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:#fff;font-family:Arial,Helvetica,sans-serif}
+header{padding:20px 5%;border-bottom:1px solid #463719;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;background:#101010}
+.logo{font-size:28px;font-weight:800}.logo span{color:var(--gold)}
+button{cursor:pointer;border:0;border-radius:12px;padding:13px 17px;font-weight:700;font-size:15px}
+.primary{background:linear-gradient(135deg,var(--gold),var(--gold2));color:#17120a}.outline{background:transparent;color:var(--gold);border:1px solid var(--gold)}
+main{max-width:980px;margin:24px auto;padding:0 16px}.notice{padding:14px;border:1px solid #6c5422;background:#241c0d;border-radius:14px;color:#f4dda0;line-height:1.45}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:20px}.card{background:var(--card);border:1px solid #33302a;border-radius:20px;padding:22px}
+h1{font-size:clamp(32px,6vw,54px);margin:8px 0;color:var(--gold)}h2{margin-top:0}p{color:var(--muted);line-height:1.5}
+label{display:block;margin:14px 0 7px;color:#e7d9b2;font-size:14px}input{width:100%;padding:14px;border-radius:10px;border:1px solid #4c4639;background:#090909;color:white;font-size:16px}
+.actions{display:flex;gap:10px;margin-top:18px;flex-wrap:wrap}.tabs{display:flex;gap:8px;margin-bottom:12px}.tabs button{flex:1}
+.status{margin-top:12px;min-height:22px;color:var(--gold);font-size:14px}.hidden{display:none!important}
+.pills{display:flex;gap:10px;flex-wrap:wrap}.pill{padding:10px 14px;background:#292929;border-radius:10px;color:#f3c44f}
+footer{text-align:center;color:#777;padding:28px 12px;font-size:12px}
+@media(max-width:700px){.grid{grid-template-columns:1fr}.card{padding:18px}.logo{font-size:24px}}
+</style>
+</head>
+<body>
+<header><div class="logo">DP <span>CASINO</span></div><button class="outline" id="topLogout" onclick="logout()" hidden>Log out</button></header>
+<main>
+<div class="notice"><b>DEMO ONLY:</b> This is a local practice login. Do not use a real password. Accounts are stored only in this browser and are not secure or synced across devices. No real-money deposits, betting, prizes, or withdrawals.</div>
+<section id="auth" class="grid">
+ <div class="card"><p style="letter-spacing:3px;color:var(--gold)">WELCOME BACK</p><h1>Login</h1><p>Sign in to your demo account.</p>
+  <form id="loginForm"><label for="loginUser">Username</label><input id="loginUser" autocomplete="username" required maxlength="24"><label for="loginPass">Password</label><input id="loginPass" type="password" autocomplete="current-password" required minlength="4"><div class="actions"><button class="primary" type="submit">Login</button></div></form><div class="status" id="loginStatus" aria-live="polite"></div>
+ </div>
+ <div class="card"><p style="letter-spacing:3px;color:var(--gold)">NEW PLAYER</p><h1>Register</h1><p>Create a demo account for this browser.</p>
+  <form id="registerForm"><label for="regUser">Choose username</label><input id="regUser" autocomplete="username" required minlength="3" maxlength="24" pattern="[A-Za-z0-9_]+" title="Use letters, numbers, and underscores only"><label for="regPass">Create password</label><input id="regPass" type="password" autocomplete="new-password" required minlength="4"><label for="regPass2">Confirm password</label><input id="regPass2" type="password" autocomplete="new-password" required minlength="4"><div class="actions"><button class="primary" type="submit">Create demo account</button></div></form><div class="status" id="registerStatus" aria-live="polite"></div>
+ </div>
+</section>
+<section id="dashboard" class="hidden">
+ <div class="card" style="margin-top:20px"><p style="letter-spacing:3px;color:var(--gold)">PLAYER DASHBOARD</p><h1>Welcome, <span id="welcomeName"></span>!</h1><p>You are signed in to the local DP CASINO demo.</p><div class="pills"><div class="pill">Demo wallet: 10,000 pts</div><div class="pill">Practice mode</div></div><h2 style="margin-top:26px">Colour Prediction Practice</h2><p>Choose a colour to see a random practice result. This does not predict real-world outcomes.</p><div class="pills"><button class="primary" onclick="play('Red')">🔴 Red</button><button class="primary" onclick="play('Green')">🟢 Green</button><button class="primary" onclick="play('Violet')">🟣 Violet</button></div><div class="status" id="gameStatus" aria-live="polite"></div><h2>Recent demo rounds</h2><ol id="history"><li>No rounds yet.</li></ol><button class="outline" onclick="logout()">Log out</button></div>
+</section>
+</main><footer>DP CASINO • Local demo only • Not a real-money gaming service</footer>
+<script>
+const USERS_KEY='dpCasinoDemoUsersV1', SESSION_KEY='dpCasinoDemoSessionV1';
+const readUsers=()=>{try{return JSON.parse(localStorage.getItem(USERS_KEY)||'{}')}catch{return {}}};
+const clean=s=>s.trim().toLowerCase();
+function showDashboard(username){document.getElementById('auth').classList.add('hidden');document.getElementById('dashboard').classList.remove('hidden');document.getElementById('topLogout').hidden=false;document.getElementById('welcomeName').textContent=username;renderHistory()}
+function logout(){sessionStorage.removeItem(SESSION_KEY);document.getElementById('dashboard').classList.add('hidden');document.getElementById('auth').classList.remove('hidden');document.getElementById('topLogout').hidden=true}
+document.getElementById('registerForm').addEventListener('submit',e=>{e.preventDefault();const username=document.getElementById('regUser').value.trim(),key=clean(username),p=document.getElementById('regPass').value,p2=document.getElementById('regPass2').value,status=document.getElementById('registerStatus');if(p!==p2){status.textContent='Passwords do not match.';return}const users=readUsers();if(users[key]){status.textContent='That username already exists in this browser.';return}users[key]={username,password:p};localStorage.setItem(USERS_KEY,JSON.stringify(users));sessionStorage.setItem(SESSION_KEY,username);status.textContent='Demo account created!';showDashboard(username)});
+document.getElementById('loginForm').addEventListener('submit',e=>{e.preventDefault();const username=document.getElementById('loginUser').value.trim(),p=document.getElementById('loginPass').value,user=readUsers()[clean(username)],status=document.getElementById('loginStatus');if(!user||user.password!==p){status.textContent='Username or password is incorrect for this demo.';return}sessionStorage.setItem(SESSION_KEY,user.username);status.textContent='Login successful.';showDashboard(user.username)});
+function play(chosen){const colors=['Red','Green','Violet'],result=colors[Math.floor(Math.random()*colors.length)],item={chosen,result,time:new Date().toLocaleTimeString()};const rounds=JSON.parse(sessionStorage.getItem('dpDemoRounds')||'[]');rounds.unshift(item);sessionStorage.setItem('dpDemoRounds',JSON.stringify(rounds.slice(0,8)));document.getElementById('gameStatus').textContent=`You chose ${chosen}. Random demo result: ${result}. ${chosen===result?'Match!':'No match this round.'}`;renderHistory()}
+function renderHistory(){const list=document.getElementById('history');if(!list)return;const rounds=JSON.parse(sessionStorage.getItem('dpDemoRounds')||'[]');list.innerHTML=rounds.length?rounds.map(r=>`<li>${r.time} — chose ${r.chosen}; result ${r.result}</li>`).join(''):'<li>No rounds yet.</li>'}
+const active=sessionStorage.getItem(SESSION_KEY);if(active)showDashboard(active);
+</script>
+</body></html>
